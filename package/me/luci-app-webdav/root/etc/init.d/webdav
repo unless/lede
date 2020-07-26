@@ -1,0 +1,33 @@
+#!/bin/sh /etc/rc.common
+# Copyright (c) 2011-2015 OpenWrt.org
+
+START=90
+
+get_config() {
+	config_get_bool enabled $1 enabled 0
+	config_get locallog $1 locallog
+ehco $1
+}
+
+
+
+start() {
+	config_load webdav
+	config_foreach get_config webdav
+	[ $enabled -eq 0 ] && exit 0
+
+	if [ $autoactivate -eq 1 ]; then
+	nohup /usr/bin/webdav -c /etc/webdav.yml >/"$locallog" 2>&1 &
+	else
+	nohup /usr/bin/webdav -c /etc/webdav.yml >/dev/null 2>&1 &
+	fi
+
+	echo "webdav Server has started."
+
+}
+
+stop() {
+    killall -q -9 webdav
+    echo "webdav Server has stopped."
+}
+
